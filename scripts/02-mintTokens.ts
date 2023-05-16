@@ -3,8 +3,7 @@ import { MyERC20Votes__factory } from "../typechain-types"
 
 const developmentChains = ["hardhat", "localhost"]
 
-// const MINT_VALUE = ethers.utils.parseEther(process.argv[4])
-
+// script to add flags
 interface Flags {
   votesContractAddress: string | null
   minterAddress: string | null
@@ -37,18 +36,36 @@ function parseArgs(): Flags {
   return flags
 }
 
-// // Parse the arguments
-// const parsedArgs: Flags = parseArgs()
-// console.log("Votes Contract Address:", parsedArgs.votesContractAddress)
-
 async function main() {
   const parsedArgs: Flags = parseArgs()
-  const [deployer, account1, account2] = await ethers.getSigners()
 
-  let votesTokenAddress = parsedArgs.votesContractAddress
+  let signer
+
+  // getting the signer for sepolia or localhost
+  if (!developmentChains.includes(network.name)) {
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.SEPOLIA_RPC_URL
+    )
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!)
+    signer = wallet.connect(provider)
+    console.log(`The Signer address is: ${signer.address}`)
+  } else {
+    const accounts = await ethers.getSigners()
+    const signerLocal = accounts[0]
+    console.log(`The Signer address is: ${signerLocal.address}`)
+    signer = signerLocal
+  }
+
+  // pulling the MyErc20Votes address, minterAddress and amount from flags
+  let myERC20VotesAddress = parsedArgs.votesContractAddress
   const minterAddress = parsedArgs.minterAddress
-  const contractFactory = new MyERC20Votes__factory(deployer)
-  const votesTokenContract = await contractFactory.attach(votesTokenAddress!)
+  const contractFactory = new MyERC20Votes__factory(signer)
+  const votesTokenContract = await contractFactory.attach(myERC20VotesAddress!)
+
+  // minting tokens to the minterAddress
+  console.log(
+    "\n========================== Minting MyVoteToken ==========================\n"
+  )
   const mintTx = await votesTokenContract.mint(
     minterAddress!,
     ethers.utils.parseEther(parsedArgs.mintAmount!)
@@ -62,6 +79,10 @@ async function main() {
     } at block ${mintTxReceipt.blockNumber}\n `
   )
 
+  // Querying the balance to check if the tokens are minted
+  console.log(
+    "\n========================== Your MyVoteToken Balance ==========================\n"
+  )
   const balanceBN = await votesTokenContract.balanceOf(minterAddress!)
   console.log(
     `Account: ${minterAddress} has ${ethers.utils.formatEther(
@@ -69,6 +90,9 @@ async function main() {
     )} number of Tokens\n`
   )
 
+  console.log(
+    "\n========================== Your Voting Power ==========================\n"
+  )
   const votes = await votesTokenContract.getVotes(minterAddress!)
   if (ethers.utils.formatEther(votes) === "0.0") {
     console.log(

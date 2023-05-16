@@ -26,7 +26,7 @@ async function main() {
   const contract = await contractFactory.deploy()
   const receipt = await contract.deployTransaction.wait()
   console.log(
-    "\n==========================Deploying MyVoteToken==========================\n"
+    "\n========================== Deploying MyVoteToken ==========================\n"
   )
   console.log(
     `The MyERC20Votes is deployed at: ${contract.address} \nand the Tx Hash is: ${receipt.transactionHash}\n`
