@@ -8,9 +8,19 @@ Prerequisites: [Node (v18 LTS)](https://nodejs.org/en/download/) plus [Yarn (v1.
 
 🚨 If you are using a version < v18 you will need to remove `openssl-legacy-provider` from the `start` script in `package.json`
 
-> ### The Ballot Address on Sepolia Network is: `0x66eb0E81E85952816f4e629a929ce3D5f2B36fDB`
+> ### The MyERC20Votes Address on Sepolia Network is: `0x1734E67eE6c21f2Ff59CC9F9B209f798f2448862`
 >
-> > ### Vote for your fav coffee chain: Dunkin Starbucks Tims Peet (0 index based)
+> ### The TokenizedBallot Address on Sepolia Network is: `0xBEd8efAbfB986EF7b791CDE1694FC1EB56db0DFc`
+
+---
+
+### Vote for your fav Food Chain: (0 index based)
+
+0. Wendys
+1. Starbucks
+2. McDonalds
+3. KFC
+4. Dunkin
 
 ---
 
@@ -59,13 +69,13 @@ cp .env.example .env
 
    > > e.g: `yarn ts-node --files ./scripts/03-delegateTokens.ts --votesContractAddress 0xBc04B42E46366716841Afd78728a712AC8c768D6 --delegateAddress 0x9BB7c044FD16573754815bc854f67fdE8370f701`
 
-   ### In order to vote you need to deploy the Tokenized Ballot Contract.
+### In order to vote you need to deploy the Tokenized Ballot Contract.
 
 4. To deploy the Tokenized Ballot contract, run
    ```
-   yarn ts-node --files ./scripts/01-deploy-myerc20votes.ts
+   yarn ts-node --files ./scripts/04-deploy-tokenizedBallot.ts <MyERC20Votes_Contract_Address> <Proposal_Names>
    ```
-   > > e.g: `yarn ts-node --files ./scripts/01-deploy-ballot.ts`
+   > > e.g: `yarn ts-node --files ./scripts/04-deploy-tokenizedBallot.ts 0x1734E67eE6c21f2Ff59CC9F9B209f798f2448862 Wendys Starbucks McDonalds KFC Dunkin`
 5. To vote, run
    ```
    yarn ts-node --files ./scripts/vote.ts <BALLOT_ADDRESS> <PROPOSAL NUMBER>
