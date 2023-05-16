@@ -14,7 +14,7 @@ Prerequisites: [Node (v18 LTS)](https://nodejs.org/en/download/) plus [Yarn (v1.
 
 ---
 
-### Vote for your fav Food Chain: (0 index based)
+### Vote for your fav Food Chain:
 
 0. Wendys
 1. Starbucks
@@ -76,13 +76,13 @@ cp .env.example .env
    yarn ts-node --files ./scripts/04-deploy-tokenizedBallot.ts <MyERC20Votes_Contract_Address> <Proposal_Names>
    ```
    > > e.g: `yarn ts-node --files ./scripts/04-deploy-tokenizedBallot.ts 0x1734E67eE6c21f2Ff59CC9F9B209f798f2448862 Wendys Starbucks McDonalds KFC Dunkin`
-5. To vote, run
+5. To vote on a proposal, select the proposal number from above, run
    ```
-   yarn ts-node --files ./scripts/vote.ts <BALLOT_ADDRESS> <PROPOSAL NUMBER>
+   yarn ts-node --files ./scripts/05-castVote.ts --tokenizedContractAddress <TokenizedBallot_Contract_Address> --proposalNumber <Proposal_Number> --voteAmount <Vote_Amount>
    ```
-   > > e.g: `yarn ts-node --files ./scripts/vote.ts 0x66eb0E81E85952816f4e629a929ce3D5f2B36fDB 1`
+   > > e.g: `yarn ts-node --files ./scripts/05-castVote.ts --tokenizedContractAddress 0xBEd8efAbfB986EF7b791CDE1694FC1EB56db0DFc --proposalNumber 1 --voteAmount 100`
 6. To get the winning proposal, run
    ```
-   yarn ts-node --files ./scripts/winningProposal.ts <BALLOT_ADDRESS>
+   yarn ts-node --files ./scripts/06-queryResults.ts --tokenizedContractAddress <TokenizedBallot_ADDRESS>
    ```
-   > > e.g: `yarn ts-node --files ./scripts/winningProposal.ts 0x66eb0E81E85952816f4e629a929ce3D5f2B36fDB`
+   > > e.g: `yarn ts-node --files ./scripts/06-queryResults.ts --tokenizedContractAddress 0xBEd8efAbfB986EF7b791CDE1694FC1EB56db0DFc`

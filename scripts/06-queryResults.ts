@@ -1,8 +1,11 @@
 import { ethers, network } from "hardhat"
 import { TokenizedBallot, TokenizedBallot__factory } from "../typechain-types"
 
-const PROPOSALS = ["Alpha", "Beta", "Gamma"]
+const developmentChains = ["hardhat", "localhost"]
 
+const PROPOSALS = ["Wendys", "Starbucks", "McDonalds", "KFC", "Dunkin"]
+
+// script to add flags
 interface Flags {
   tokenizedContractAddress: string | null
 }
@@ -46,12 +49,29 @@ async function getVoteCountSummary(_contract: TokenizedBallot) {
 async function main() {
   const parsedArgs: Flags = parseArgs()
 
-  const [deployer, account1, account2] = await ethers.getSigners()
-  const tokenizedBallotContract = new TokenizedBallot__factory(deployer)
+  let signer
+
+  // getting the signer for sepolia or localhost
+  if (!developmentChains.includes(network.name)) {
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.SEPOLIA_RPC_URL
+    )
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!)
+    signer = wallet.connect(provider)
+    console.log(`The Signer address is: ${signer.address}`)
+  } else {
+    const accounts = await ethers.getSigners()
+    const signerLocal = accounts[0]
+    console.log(`The Signer address is: ${signerLocal.address}`)
+    signer = signerLocal
+  }
+
+  // pulling the votesContractAddress from flags
+  const tokenizedBallotContract = new TokenizedBallot__factory(signer)
   const votesTokenContract = await tokenizedBallotContract.attach(
     parsedArgs.tokenizedContractAddress!
   )
-
+  // querying the winning proposal and name
   const winningProposalNumber = await votesTokenContract.winningProposal()
 
   const winningProposal = await votesTokenContract.proposals(
@@ -59,7 +79,10 @@ async function main() {
   )
   const winningProposalVoteCount = winningProposal.voteCount
   const winnerName = await votesTokenContract.winnerName()
-  // console.log(`The winning proposal number is: ${winningProposal.toString()}`);
+
+  console.log(
+    "\n========================== Winning Proposal ==========================\n"
+  )
   console.log(
     `The winning proposal so far is ${ethers.utils.parseBytes32String(
       winnerName

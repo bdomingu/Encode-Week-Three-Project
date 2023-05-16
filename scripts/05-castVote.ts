@@ -3,10 +3,7 @@ import { TokenizedBallot__factory } from "../typechain-types"
 
 const developmentChains = ["hardhat", "localhost"]
 
-// const votesTokenAddress = process.argv[2]
-// const parsedArgs.voteAmount! = process.argv[3]
-// const DELEGATE_VALUE = ethers.utils.parseEther(process.argv[4])
-
+// script to add flags
 interface Flags {
   tokenizedContractAddress: string | null
   proposalNumber: string | null
@@ -41,26 +38,43 @@ function parseArgs(): Flags {
 
 async function main() {
   const parsedArgs: Flags = parseArgs()
-  const [deployer, account1, account2] = await ethers.getSigners()
-  const tokenizedBallotContract = new TokenizedBallot__factory(deployer)
+
+  let signer
+
+  // getting the signer for sepolia or localhost
+  if (!developmentChains.includes(network.name)) {
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.SEPOLIA_RPC_URL
+    )
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!)
+    signer = wallet.connect(provider)
+    console.log(`The Signer address is: ${signer.address}`)
+  } else {
+    const accounts = await ethers.getSigners()
+    const signerLocal = accounts[0]
+    console.log(`The Signer address is: ${signerLocal.address}`)
+    signer = signerLocal
+  }
+
+  // pulling the votesContractAddress, proposal number and vote amount from flags
+  const tokenizedBallotContract = new TokenizedBallot__factory(signer)
   const votesTokenContract = await tokenizedBallotContract.attach(
     parsedArgs.tokenizedContractAddress!
   )
-  console.log(
-    ethers.utils.formatEther(ethers.utils.parseEther(parsedArgs.voteAmount!))
-  )
-  console.log(ethers.utils.parseEther(parsedArgs.voteAmount!))
 
   try {
     const votesFromAccount1 = await votesTokenContract
-      .connect(account2)
+      .connect(signer)
       .vote(
         parsedArgs.proposalNumber!,
         ethers.utils.parseEther(parsedArgs.voteAmount!)
       )
+    console.log(
+      "\n========================== Voting in Progress ==========================\n"
+    )
     const votesFromAccount1Tx = await votesFromAccount1.wait()
     console.log(
-      `Successfully voted for proposal no.: ${parsedArgs.proposalNumber} \n the transaction hash is: ${votesFromAccount1Tx.transactionHash}`
+      `Successfully voted for proposal no.: ${parsedArgs.proposalNumber} \nThe transaction hash is: ${votesFromAccount1Tx.transactionHash}`
     )
   } catch (err) {
     if (err instanceof Error) {
