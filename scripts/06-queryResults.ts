@@ -1,16 +1,10 @@
 import { ethers, network } from "hardhat"
-import { TokenizedBallot__factory } from "../typechain-types"
+import { TokenizedBallot, TokenizedBallot__factory } from "../typechain-types"
 
-const developmentChains = ["hardhat", "localhost"]
-
-// const votesTokenAddress = process.argv[2]
-// const parsedArgs.voteAmount! = process.argv[3]
-// const DELEGATE_VALUE = ethers.utils.parseEther(process.argv[4])
+const PROPOSALS = ["Alpha", "Beta", "Gamma"]
 
 interface Flags {
   tokenizedContractAddress: string | null
-  proposalNumber: string | null
-  voteAmount: string | null
 }
 
 function parseArgs(): Flags {
@@ -18,8 +12,6 @@ function parseArgs(): Flags {
 
   const flags: Flags = {
     tokenizedContractAddress: null,
-    proposalNumber: null,
-    voteAmount: null,
   }
 
   for (let i = 0; i < args.length; i++) {
@@ -39,37 +31,41 @@ function parseArgs(): Flags {
   return flags
 }
 
+async function getVoteCountSummary(_contract: TokenizedBallot) {
+  console.log("\n==================Vote Count Summary===================")
+  for (let i = 0; i < PROPOSALS.length; i++) {
+    let proposal = await _contract.proposals(i)
+    console.log(
+      `Proposal N.${i + 1}: ${ethers.utils.parseBytes32String(
+        proposal.name
+      )} has ${ethers.utils.formatUnits(proposal.voteCount)} votes`
+    )
+  }
+}
+
 async function main() {
   const parsedArgs: Flags = parseArgs()
+
   const [deployer, account1, account2] = await ethers.getSigners()
   const tokenizedBallotContract = new TokenizedBallot__factory(deployer)
   const votesTokenContract = await tokenizedBallotContract.attach(
     parsedArgs.tokenizedContractAddress!
   )
-  console.log(
-    ethers.utils.formatEther(ethers.utils.parseEther(parsedArgs.voteAmount!))
-  )
-  console.log(ethers.utils.parseEther(parsedArgs.voteAmount!))
 
-  try {
-    const votesFromAccount1 = await votesTokenContract
-      .connect(account2)
-      .vote(
-        parsedArgs.proposalNumber!,
-        ethers.utils.parseEther(parsedArgs.voteAmount!)
-      )
-    const votesFromAccount1Tx = await votesFromAccount1.wait()
-    console.log(
-      `Successfully voted for proposal no.: ${parsedArgs.proposalNumber} \n the transaction hash is: ${votesFromAccount1Tx.transactionHash}`
-    )
-  } catch (err) {
-    if (err instanceof Error) {
-      // ✅ TypeScript knows err is Error
-      console.log(err.message)
-    } else {
-      console.log("Unexpected error", err)
-    }
-  }
+  const winningProposalNumber = await votesTokenContract.winningProposal()
+
+  const winningProposal = await votesTokenContract.proposals(
+    winningProposalNumber
+  )
+  const winningProposalVoteCount = winningProposal.voteCount
+  const winnerName = await votesTokenContract.winnerName()
+  // console.log(`The winning proposal number is: ${winningProposal.toString()}`);
+  console.log(
+    `The winning proposal so far is ${ethers.utils.parseBytes32String(
+      winnerName
+    )} with ${ethers.utils.formatEther(winningProposalVoteCount)} votes`
+  )
+  getVoteCountSummary(votesTokenContract)
 }
 
 main().catch((error) => {
