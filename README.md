@@ -1,13 +1,78 @@
-# Sample Hardhat Project
+# Encode Week3: Tokenized Ballot Project
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project demonstrates the use of ERC20Votes to get a past snapshot of voting power. This token can be used to vote on multiple proposal.
 
-Try running some of the following tasks:
+# 🏄‍♂️ Quick Start
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
+Prerequisites: [Node (v18 LTS)](https://nodejs.org/en/download/) plus [Yarn (v1.x)](https://classic.yarnpkg.com/en/docs/install/) and [Git](https://git-scm.com/downloads)
+
+🚨 If you are using a version < v18 you will need to remove `openssl-legacy-provider` from the `start` script in `package.json`
+
+> ### The Ballot Address on Sepolia Network is: `0x66eb0E81E85952816f4e629a929ce3D5f2B36fDB`
+>
+> > ### Vote for your fav coffee chain: Dunkin Starbucks Tims Peet (0 index based)
+
+---
+
+> 1️⃣ clone/fork 🏗
+> Encode-Week-Three-Project:
+
+```bash
+git clone https://github.com/bdomingu/Encode-Week-Three-Project.git
 ```
+
+> 2️⃣ install and start your 👷‍ Hardhat chain:
+
+```bash
+cd Encode-Week-Three-Project
+yarn install
+```
+
+> 3️⃣ cp `.env.example` to `.env` and fill the required keys
+
+```bash
+cp .env.example .env
+```
+
+# Usage
+
+> #### Run the script of choice with `yarn ts-node --files ./scripts/<script name>`
+
+1. To deploy the MyVoteToken contract, run
+   ```
+   yarn ts-node --files ./scripts/01-deploy-myerc20votes.ts
+   ```
+   > > e.g: `yarn ts-node --files ./scripts/01-deploy-ballot.ts`
+2. To mint tokens to a address, run
+
+   ```
+   yarn ts-node --files ./scripts/02-mintTokens.ts --votesContractAddress <MyERC20Votes_Contract_Address> --minterAddress <Minter_Address> --mintAmount <Mint_Amount>
+   ```
+
+   > > e.g: `yarn ts-node --files ./scripts/02-mintTokens.ts --votesContractAddress 0xBc04B42E46366716841Afd78728a712AC8c768D6 --minterAddress 0xF6d38b257b4DD900BABe5B0f48A877943C0f1312 --mintAmount 100`
+
+3. To delegate vote, run
+
+   ```
+   yarn ts-node --files ./scripts/03-delegateTokens.ts --votesContractAddress <MyERC20Votes_Contract_Address> --delegateAddress <Delegate_Address>
+   ```
+
+   > > e.g: `yarn ts-node --files ./scripts/03-delegateTokens.ts --votesContractAddress 0xBc04B42E46366716841Afd78728a712AC8c768D6 --delegateAddress 0x9BB7c044FD16573754815bc854f67fdE8370f701`
+
+   ### In order to vote you need to deploy the Tokenized Ballot Contract.
+
+4. To deploy the Tokenized Ballot contract, run
+   ```
+   yarn ts-node --files ./scripts/01-deploy-myerc20votes.ts
+   ```
+   > > e.g: `yarn ts-node --files ./scripts/01-deploy-ballot.ts`
+5. To vote, run
+   ```
+   yarn ts-node --files ./scripts/vote.ts <BALLOT_ADDRESS> <PROPOSAL NUMBER>
+   ```
+   > > e.g: `yarn ts-node --files ./scripts/vote.ts 0x66eb0E81E85952816f4e629a929ce3D5f2B36fDB 1`
+6. To get the winning proposal, run
+   ```
+   yarn ts-node --files ./scripts/winningProposal.ts <BALLOT_ADDRESS>
+   ```
+   > > e.g: `yarn ts-node --files ./scripts/winningProposal.ts 0x66eb0E81E85952816f4e629a929ce3D5f2B36fDB`

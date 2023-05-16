@@ -16,7 +16,7 @@ const PRIVATE_KEY =
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || ""
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "localhost",
+  defaultNetwork: "sepolia",
   networks: {
     hardhat: {
       chainId: 31337,

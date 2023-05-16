@@ -3,10 +3,7 @@ import { MyERC20Votes__factory } from "../typechain-types"
 
 const developmentChains = ["hardhat", "localhost"]
 
-// const votesTokenAddress = process.argv[2]
-// const parsedArgs.delegateAddress! = process.argv[3]
-// const DELEGATE_VALUE = ethers.utils.parseEther(process.argv[4])
-
+// script to add flags
 interface Flags {
   votesContractAddress: string | null
   delegateAddress: string | null
@@ -39,12 +36,34 @@ function parseArgs(): Flags {
 
 async function main() {
   const parsedArgs: Flags = parseArgs()
-  const [deployer, account1, account2] = await ethers.getSigners()
-  const contractFactory = new MyERC20Votes__factory(deployer)
+
+  let signer
+
+  // getting the signer for sepolia or localhost
+  if (!developmentChains.includes(network.name)) {
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.SEPOLIA_RPC_URL
+    )
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!)
+    signer = wallet.connect(provider)
+    console.log(`The Signer address is: ${signer.address}`)
+  } else {
+    const accounts = await ethers.getSigners()
+    const signerLocal = accounts[0]
+    console.log(`The Signer address is: ${signerLocal.address}`)
+    signer = signerLocal
+  }
+
+  // pulling the votesContractAddress, delegateAddress from flags
+  const contractFactory = new MyERC20Votes__factory(signer)
   const votesTokenContract = await contractFactory.attach(
     parsedArgs.votesContractAddress!
   )
 
+  // Querying the balance of delegate address
+  console.log(
+    "\n========================== Your MyVoteToken Balance ==========================\n"
+  )
   const balanceBN = await votesTokenContract.balanceOf(
     parsedArgs.delegateAddress!
   )
@@ -54,18 +73,26 @@ async function main() {
     )} number of Tokens\n`
   )
 
-  const votes = await votesTokenContract.getVotes(parsedArgs.delegateAddress!)
-  console.log(
-    `Account: ${parsedArgs.delegateAddress!} has ${ethers.utils.formatEther(
-      votes
-    )} voting power before delegating\n`
-  )
+  // const votes = await votesTokenContract.getVotes(parsedArgs.delegateAddress!)
+  // console.log(
+  //   `Account: ${parsedArgs.delegateAddress!} has ${ethers.utils.formatEther(
+  //     votes
+  //   )} voting power before delegating\n`
+  // )
+
+  // delegating to the delegateAddress
   const delegateTx = await votesTokenContract
-    .connect(account2)
+    .connect(signer)
     .delegate(parsedArgs.delegateAddress!)
+  console.log(
+    "\n========================== Delegating Votes ==========================\n"
+  )
   await delegateTx.wait()
   const votesAfter = await votesTokenContract.getVotes(
     parsedArgs.delegateAddress!
+  )
+  console.log(
+    "\n========================== Your Voting Power ==========================\n"
   )
   console.log(
     `Account: ${parsedArgs.delegateAddress!} has ${ethers.utils.formatEther(
